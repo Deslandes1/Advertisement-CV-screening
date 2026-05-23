@@ -1,16 +1,12 @@
-The error is because `random` is used but not imported. Add `import random` at the top of the file. Here's the corrected `app.py` with the missing import and a few other minor fixes (e.g., `docx2txt` import error handling). Replace your entire `app.py` with this:
-
-```python
 import streamlit as st
 import pandas as pd
 import io
 import base64
 import os
 import re
-import random  # <-- ADDED
+import random
 from datetime import datetime
 
-# Document extraction
 try:
     import pdfplumber
 except ImportError:
@@ -26,11 +22,9 @@ st.set_page_config(
     layout="wide"
 )
 
-# ========== EXTREME COLORFUL CSS WITH STARS, CARTOONS, POINTERS ==========
 st.markdown(
     """
     <style>
-    /* ---------- Animations ---------- */
     @keyframes spin {
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
@@ -127,26 +121,21 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# ========== ADD SPINNING STARS, FLOATING STARS & POINTING HANDS ==========
 def add_stars_and_pointers():
-    # Spinning stars (fixed positions)
     spin_positions = [(5, 15), (90, 10), (15, 80), (85, 70), (45, 5)]
     for i, (x, y) in enumerate(spin_positions):
         st.markdown(f'<div class="spinning-star" style="left: {x}%; top: {y}%; animation-delay: {i}s;">⭐</div>', unsafe_allow_html=True)
-    # Floating stars (more numerous)
     for _ in range(12):
         left = random.randint(2, 95)
         top = random.randint(2, 90)
         dur = random.uniform(3, 7)
         st.markdown(f'<div class="floating-star" style="left: {left}%; top: {top}%; animation-duration: {dur}s;">🌟</div>', unsafe_allow_html=True)
-    # Pointing hands
     pointer_positions = [(20, 50), (75, 30), (50, 80)]
     for (x, y) in pointer_positions:
         st.markdown(f'<div class="pointing-hand" style="left: {x}%; top: {y}%;">👉</div>', unsafe_allow_html=True)
 
 add_stars_and_pointers()
 
-# ========== SESSION STATE ==========
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
 if "job_positions" not in st.session_state:
@@ -160,10 +149,9 @@ if "job_positions" not in st.session_state:
 if "applications" not in st.session_state:
     st.session_state.applications = pd.DataFrame(columns=["applicant_name", "email", "job_title", "score", "cv_text_preview", "date"])
 
-# Helper functions
 def extract_text_from_pdf(file_bytes):
     if pdfplumber is None:
-        return "PDF extraction not available. Please install pdfplumber."
+        return "PDF extraction not available."
     try:
         with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
             text = ""
@@ -172,9 +160,10 @@ def extract_text_from_pdf(file_bytes):
         return text
     except:
         return ""
+
 def extract_text_from_docx(file_bytes):
     if docx2txt is None:
-        return "DOCX extraction not available. Please install docx2txt."
+        return "DOCX extraction not available."
     try:
         import tempfile
         with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp:
@@ -185,11 +174,13 @@ def extract_text_from_docx(file_bytes):
         return text
     except:
         return ""
+
 def extract_text_from_txt(file_bytes):
     try:
         return file_bytes.decode("utf-8")
     except:
         return ""
+
 def extract_cv_text(uploaded_file):
     file_bytes = uploaded_file.read()
     if uploaded_file.type == "application/pdf":
@@ -200,6 +191,7 @@ def extract_cv_text(uploaded_file):
         return extract_text_from_txt(file_bytes)
     else:
         return "Unsupported file type."
+
 def compute_match_score(cv_text, job_skills, job_description):
     cv_lower = cv_text.lower()
     skills_list = [s.strip().lower() for s in job_skills.split(",")]
@@ -210,7 +202,6 @@ def compute_match_score(cv_text, job_skills, job_description):
     desc_score = (desc_matches / max(len(desc_keywords), 1)) * 100
     return round(skill_score * 0.7 + desc_score * 0.3, 2)
 
-# ========== LOGIN PAGE ==========
 def login():
     col1, col2, col3 = st.columns([1,2,1])
     with col2:
@@ -228,7 +219,6 @@ def login():
             else:
                 st.error("❌ Wrong password. (Hint: try 20082010)")
 
-# ========== MAIN APP ==========
 def main_app():
     with st.sidebar:
         st.markdown('<div style="text-align:center; font-size:70px; animation: spin 3s linear infinite;">🤖</div>', unsafe_allow_html=True)
@@ -380,6 +370,3 @@ if not st.session_state.authenticated:
     login()
 else:
     main_app()
-```
-
-The only change is adding `import random` at the top. This will resolve the `NameError` and the app will run correctly.
